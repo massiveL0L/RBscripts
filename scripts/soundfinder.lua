@@ -229,90 +229,95 @@ local TweenService = game:GetService("TweenService")
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+--// Services
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+--// Player Variables
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--// GUI Creation
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomNotificationGUI"
+screenGui.Parent = playerGui
+
 --// Notification Frame
 local notificationFrame = Instance.new("Frame")
-notificationFrame.Size = UDim2.new(0, 300, 0, 80) -- Size of the notification
-notificationFrame.Position = UDim2.new(0.5, -150, 0, 20) -- Position at the top-center of the screen
-notificationFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- Dark background color
-notificationFrame.BackgroundTransparency = 0.8
+notificationFrame.Size = UDim2.new(0, 300, 0, 50)
+notificationFrame.Position = UDim2.new(0.5, -150, 0, -60) -- Starts slightly off-screen
+notificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 notificationFrame.BorderSizePixel = 0
-notificationFrame.Parent = playerGui
+notificationFrame.Parent = screenGui
 
+-- Apply rounded corners
 local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 10) -- Rounded corners
+uiCorner.CornerRadius = UDim.new(0, 12)
 uiCorner.Parent = notificationFrame
 
 --// Notification Text
 local notificationText = Instance.new("TextLabel")
-notificationText.Size = UDim2.new(1, 0, 0.6, 0) -- Takes 60% of the frame height
-notificationText.Position = UDim2.new(0, 0, 0, 10)
-notificationText.Text = "song finder updated"
-notificationText.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text color
-notificationText.Font = Enum.Font.SourceSans
-notificationText.TextSize = 18
-notificationText.TextAlignment = Enum.TextAlignment.Center
-notificationText.TextXAlignment = Enum.TextXAlignment.Center
+notificationText.Size = UDim2.new(1, 0, 0.6, 0) -- Text takes 60% of the frame
 notificationText.BackgroundTransparency = 1
+notificationText.Text = "No update found"
+notificationText.TextColor3 = Color3.fromRGB(255, 255, 255)
+notificationText.Font = Enum.Font.SourceSansBold
+notificationText.TextSize = 20
 notificationText.Parent = notificationFrame
 
 --// Progress Bar
+local progressBarBackground = Instance.new("Frame")
+progressBarBackground.Size = UDim2.new(1, 0, 0.2, 0) -- 20% of the frame height
+progressBarBackground.Position = UDim2.new(0, 0, 0.8, 0) -- Positioned at the bottom of the frame
+progressBarBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60) -- Darker gray background
+progressBarBackground.Parent = notificationFrame
+
 local progressBar = Instance.new("Frame")
-progressBar.Size = UDim2.new(1, 0, 0.2, 0) -- Takes 20% of the frame height
-progressBar.Position = UDim2.new(0, 0, 0.8, 0)
-progressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red progress bar
-progressBar.Parent = notificationFrame
+progressBar.Size = UDim2.new(0, 0, 1, 0) -- Starts at 0 width (empty)
+progressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green progress bar
+progressBar.Parent = progressBarBackground
 
-local progressFill = Instance.new("Frame")
-progressFill.Size = UDim2.new(0, 0, 1, 0) -- Starts empty
-progressFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green fill
-progressFill.Parent = progressBar
+--// Notification Appear and Disappear Animation
+local function showNotification(message)
+	notificationText.Text = message -- Set custom message
+	notificationFrame.Position = UDim2.new(0.5, -150, 0, -60) -- Reset position in case it was moved
+	notificationFrame.BackgroundTransparency = 0 -- Make sure frame is fully visible
+	notificationText.TextTransparency = 0 -- Reset text transparency
 
---// Fade In and Fade Out Functionality
-local fadeDuration = 2 -- Duration for fade-in and fade-out in seconds
-local displayDuration = 4 -- Time the notification stays visible before fading out
+	-- Tween to slide the notification down
+	local showTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+	local showTween = TweenService:Create(notificationFrame, showTweenInfo, {Position = UDim2.new(0.5, -150, 0, 20)})
 
--- Tween for Fade-In
-local fadeInTween = TweenService:Create(notificationFrame, TweenInfo.new(fadeDuration), {BackgroundTransparency = 0})
-local fadeInTextTween = TweenService:Create(notificationText, TweenInfo.new(fadeDuration), {TextTransparency = 0})
-local fadeInProgressBarTween = TweenService:Create(progressBar, TweenInfo.new(fadeDuration), {BackgroundTransparency = 0})
+	-- Wait for the tween to complete before continuing
+	showTween:Play()
+	showTween.Completed:Wait() -- Wait for tween to finish
 
--- Tween for Fade-Out
-local fadeOutTween = TweenService:Create(notificationFrame, TweenInfo.new(fadeDuration), {BackgroundTransparency = 1})
-local fadeOutTextTween = TweenService:Create(notificationText, TweenInfo.new(fadeDuration), {TextTransparency = 1})
-local fadeOutProgressBarTween = TweenService:Create(progressBar, TweenInfo.new(fadeDuration), {BackgroundTransparency = 1})
+	-- Animate the progress bar to fill up over 3 seconds
+	local progressTweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local progressTween = TweenService:Create(progressBar, progressTweenInfo, {Size = UDim2.new(1, 0, 1, 0)})
+	progressTween:Play()
 
--- Function to Show Notification
-local function showNotification()
-	-- Reset progress bar size
-	progressFill.Size = UDim2.new(0, 0, 1, 0)
-	
-	-- Play the fade-in tween
-	notificationFrame.BackgroundTransparency = 1
-	notificationText.TextTransparency = 1
-	progressBar.BackgroundTransparency = 1
-	notificationFrame.Visible = true
-	TweenService:Play(fadeInTween)
-	TweenService:Play(fadeInTextTween)
-	TweenService:Play(fadeInProgressBarTween)
+	-- Wait for the progress bar animation to complete before fading out
+	progressTween.Completed:Wait()
 
-	-- Animate the progress bar
-	local progressTween = TweenService:Create(progressFill, TweenInfo.new(displayDuration, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 1, 0)})
-	TweenService:Play(progressTween)
+	-- Tween to fade out and slide up the notification
+	local hideTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
+	local hideTween = TweenService:Create(notificationFrame, hideTweenInfo, {Position = UDim2.new(0.5, -150, 0, -60)})
+	local fadeOutTween1 = TweenService:Create(notificationFrame, hideTweenInfo, {BackgroundTransparency = 1})
+	local fadeOutTween2 = TweenService:Create(notificationText, hideTweenInfo, {TextTransparency = 1})
+	local fadeOutTween3 = TweenService:Create(progressBarBackground, hideTweenInfo, {BackgroundTransparency = 1})
+	local fadeOutTween4 = TweenService:Create(progressBar, hideTweenInfo, {BackgroundTransparency = 1})
 
-	-- Wait for the notification to be visible
-	wait(displayDuration)
+	-- Play all tweens at the same time
+	hideTween:Play()
+	fadeOutTween1:Play()
+	fadeOutTween2:Play()
+	fadeOutTween3:Play()
+	fadeOutTween4:Play()
 
-	-- Play the fade-out tween after display duration
-	TweenService:Play(fadeOutTween)
-	TweenService:Play(fadeOutTextTween)
-	TweenService:Play(fadeOutProgressBarTween)
-
-	-- Wait for the fade-out to complete
-	wait(fadeDuration)
-
-	-- Hide the notification after fade-out
-	notificationFrame.Visible = false
+	-- Wait for the hide tween to complete before ending
+	hideTween.Completed:Wait()
 end
 
--- Show notification immediately
-showNotification()
+--// Call the Notification
+showNotification("Sound Finder has been updated")
