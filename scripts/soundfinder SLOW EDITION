@@ -1,182 +1,129 @@
---since soundfinder might cause lag, use this on low-end computers.
--- Services
+--// Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- GUI Creation
+--// GUI Creation
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SoundTrackerGUI"
 screenGui.Parent = playerGui
+screenGui.IgnoreGuiInset = true
 
--- Main Frame
+--// Blurred Background
+local blurFrame = Instance.new("Frame")
+blurFrame.Size = UDim2.new(1, 0, 1, 0)
+blurFrame.BackgroundTransparency = 0.6
+blurFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+blurFrame.Parent = screenGui
+
+--// Main Frame (Draggable)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
-mainFrame.BackgroundTransparency = 1 -- Clear background
+mainFrame.Size = UDim2.new(0, 300, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
+-- Apply a UI Corner to make it rounded
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0, 10)
 uiCorner.Parent = mainFrame
 
--- Title Bar (for dragging and minimize button)
+--// Title Bar
 local titleBar = Instance.new("TextLabel")
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-titleBar.Text = "Sound Finder"
+titleBar.BorderSizePixel = 0
+titleBar.Text = "Currently Playing Sounds"
 titleBar.TextColor3 = Color3.new(1, 1, 1)
 titleBar.Font = Enum.Font.SourceSansBold
 titleBar.TextSize = 18
 titleBar.Parent = mainFrame
 
--- Minimize Button
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 30, 0, 30)
-minimizeButton.Position = UDim2.new(1, -35, 0, 0)
-minimizeButton.Text = "-"
-minimizeButton.TextColor3 = Color3.new(1, 1, 1)
-minimizeButton.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-minimizeButton.Font = Enum.Font.SourceSansBold
-minimizeButton.TextSize = 20
-minimizeButton.Parent = titleBar
+--// Scrolling Frame to Display Sound IDs
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, 0, 1, -30)
+scrollingFrame.Position = UDim2.new(0, 0, 0, 30)
+scrollingFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
+scrollingFrame.ScrollBarThickness = 6
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.Parent = mainFrame
 
--- Quit Button
-local quitButton = Instance.new("TextButton")
-quitButton.Size = UDim2.new(0, 30, 0, 30)
-quitButton.Position = UDim2.new(1, -70, 0, 0)
-quitButton.Text = "X"
-quitButton.TextColor3 = Color3.new(1, 1, 1)
-quitButton.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-quitButton.Font = Enum.Font.SourceSansBold
-quitButton.TextSize = 20
-quitButton.Parent = titleBar
+--// UIListLayout for the Sound List
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+uiListLayout.Parent = scrollingFrame
 
--- Section Headers
-local musicLabel = Instance.new("TextLabel")
-musicLabel.Size = UDim2.new(1, 0, 0, 30)
-musicLabel.Position = UDim2.new(0, 0, 0, 30)
-musicLabel.Text = "Music"
-musicLabel.TextColor3 = Color3.new(1, 1, 1)
-musicLabel.Font = Enum.Font.SourceSansBold
-musicLabel.TextSize = 18
-musicLabel.Parent = mainFrame
+--// Dragging Functionality for Main Frame
+local dragging = false
+local dragInput, dragStart, startPos
 
-local soundsLabel = Instance.new("TextLabel")
-soundsLabel.Size = UDim2.new(1, 0, 0, 30)
-soundsLabel.Position = UDim2.new(0, 0, 0, 250)
-soundsLabel.Text = "Sounds"
-soundsLabel.TextColor3 = Color3.new(1, 1, 1)
-soundsLabel.Font = Enum.Font.SourceSansBold
-soundsLabel.TextSize = 18
-soundsLabel.Parent = mainFrame
-
--- Scrolling Frames for Music and Sounds
-local musicFrame = Instance.new("ScrollingFrame")
-musicFrame.Size = UDim2.new(1, 0, 0, 180)
-musicFrame.Position = UDim2.new(0, 0, 0, 60)
-musicFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
-musicFrame.ScrollBarThickness = 6
-musicFrame.Parent = mainFrame
-
-local soundsFrame = Instance.new("ScrollingFrame")
-soundsFrame.Size = UDim2.new(1, 0, 0, 180)
-soundsFrame.Position = UDim2.new(0, 0, 0, 300)
-soundsFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
-soundsFrame.ScrollBarThickness = 6
-soundsFrame.Parent = mainFrame
-
--- Layouts for Scrolling Frames
-local musicLayout = Instance.new("UIListLayout")
-musicLayout.FillDirection = Enum.FillDirection.Vertical
-musicLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-musicLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-musicLayout.Padding = UDim.new(0, 5)
-musicLayout.Parent = musicFrame
-
-local soundsLayout = Instance.new("UIListLayout")
-soundsLayout.FillDirection = Enum.FillDirection.Vertical
-soundsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-soundsLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-soundsLayout.Padding = UDim.new(0, 5)
-soundsLayout.Parent = soundsFrame
-
--- Mute All Button
-local muteAllButton = Instance.new("TextButton")
-muteAllButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-muteAllButton.Position = UDim2.new(0.35, 0, 0.9, 0)
-muteAllButton.Text = "Mute All"
-muteAllButton.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-muteAllButton.TextColor3 = Color3.new(1, 1, 1)
-muteAllButton.Font = Enum.Font.SourceSansBold
-muteAllButton.TextSize = 18
-muteAllButton.Parent = mainFrame
-
--- Update Sound List
-local function updateSoundList()
-	-- Clear existing sound frames
-	for _, frame in pairs(musicFrame:GetChildren()) do
-		if frame:IsA("Frame") then frame:Destroy() end
+local function updateInput(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
-
-	for _, frame in pairs(soundsFrame:GetChildren()) do
-		if frame:IsA("Frame") then frame:Destroy() end
-	end
-
-	-- Add sounds to the list
-	for _, descendant in pairs(workspace:GetDescendants()) do
-		if descendant:IsA("Sound") and descendant.IsPlaying then
-			local parentFrame = descendant.Name:lower():find("music") and musicFrame or soundsFrame
-
-			local soundFrame = Instance.new("Frame")
-			soundFrame.Size = UDim2.new(1, 0, 0, 60)
-			soundFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-			soundFrame.Parent = parentFrame
-
-			local soundLabel = Instance.new("TextLabel")
-			soundLabel.Size = UDim2.new(1, 0, 0.5, 0)
-			soundLabel.Text = "ID: " .. descendant.SoundId
-			soundLabel.TextColor3 = Color3.new(1, 1, 1)
-			soundLabel.Parent = soundFrame
-
-			local sourceLabel = Instance.new("TextLabel")
-			sourceLabel.Size = UDim2.new(1, 0, 0.5, 0)
-			sourceLabel.Position = UDim2.new(0, 0, 0.5, 0)
-			sourceLabel.Text = "Source: " .. (descendant.Parent.Name or "Unknown")
-			sourceLabel.TextColor3 = Color3.new(1, 1, 1)
-			sourceLabel.Parent = soundFrame
-
-			local muteButton = Instance.new("TextButton")
-			muteButton.Size = UDim2.new(0.2, 0, 0.8, 0)
-			muteButton.Text = "Mute"
-			muteButton.Parent = soundFrame
-
-			-- Mute/Unmute functionality
-			muteButton.MouseButton1Click:Connect(function()
-				descendant.Volume = (descendant.Volume > 0) and 0 or 1
-				muteButton.Text = (descendant.Volume == 0) and "Unmute" or "Mute"
-			end)
-		end
-	end
-
-	-- Update canvas sizes after adding new items
-	musicFrame.CanvasSize = UDim2.new(0, 0, 0, musicFrame.UIListLayout.AbsoluteContentSize.Y)
-	soundsFrame.CanvasSize = UDim2.new(0, 0, 0, soundsFrame.UIListLayout.AbsoluteContentSize.Y)
 end
 
-RunService.Heartbeat:Connect(function()
-	updateSoundList()
-end)
-
--- Mute All functionality
-muteAllButton.MouseButton1Click:Connect(function()
-	for _, descendant in pairs(workspace:GetDescendants()) do
-		if descendant:IsA("Sound") then
-			descendant.Volume = 0 -- Mute all sounds
-		end
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
 	end
 end)
---since soundfinder might cause lag, use this on low-end computers.
+
+titleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(updateInput)
+
+--// Function to Update Sound List
+local function updateSoundList()
+	-- Clear old items
+	for _, child in pairs(scrollingFrame:GetChildren()) do
+		if child:IsA("TextLabel") then
+			child:Destroy()
+		end
+	end
+
+	-- Search for playing sounds
+	local sounds = {}
+	for _, descendant in pairs(workspace:GetDescendants()) do
+		if descendant:IsA("Sound") and descendant.IsPlaying then
+			table.insert(sounds, descendant.SoundId)
+		end
+	end
+
+	-- Display sound IDs
+	for _, soundId in ipairs(sounds) do
+		local soundLabel = Instance.new("TextLabel")
+		soundLabel.Size = UDim2.new(1, -10, 0, 30)
+		soundLabel.BackgroundTransparency = 1
+		soundLabel.Text = soundId
+		soundLabel.TextColor3 = Color3.new(1, 1, 1)
+		soundLabel.Font = Enum.Font.SourceSans
+		soundLabel.TextSize = 16
+		soundLabel.TextXAlignment = Enum.TextXAlignment.Left
+		soundLabel.Parent = scrollingFrame
+	end
+
+	-- Update canvas size
+	scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, #sounds * 30)
+end
+
+--// Update Sound List Regularly
+RunService.RenderStepped:Connect(function()
+	updateSoundList()
+end)
