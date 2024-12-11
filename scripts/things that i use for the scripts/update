@@ -1,1 +1,0 @@
- loadstring(game:HttpGet("https://raw.githubusercontent.com/massiveL0L/RBscripts/refs/heads/main/scripts/things%20that%20i%20use%20for%20the%20scripts/noupdate.lua"))()
