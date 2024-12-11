@@ -1,5 +1,2 @@
-# RBscripts
-All of these are mine and no credit is needed.
-Happy executing!
-
-_________________________________________
+#WebsiteRBscripts
+This is basically the RBscripts website
