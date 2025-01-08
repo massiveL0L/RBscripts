@@ -1,4 +1,11 @@
-   <style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBscripts</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
         /* General reset */
         * {
             margin: 0;
@@ -11,9 +18,23 @@
             background-color: #1e1e1e;
             color: white;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Background video styling */
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the video fills the entire area */
+            filter: blur(15px); /* Adjust the blur level here */
+            z-index: -1; /* Places the video behind other content */
         }
 
         /* Notification container */
@@ -25,25 +46,90 @@
             width: 300px;
             padding: 15px;
             background-color: #282828;
-            color: white;
             text-align: center;
             border-radius: 12px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
             opacity: 0;
             transition: all 0.5s ease-in-out;
+            z-index: 2;
         }
 
-        /* Text inside the notification */
         #notification span {
             font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Content overlay styling */
+        .content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            text-align: center;
+            font-size: 1.5em;
+            line-height: 1.5;
+            margin: 20px 0;
+        }
+
+        /* Centered text and images */
+        .content img {
+            margin: 20px;
+        }
+
+        .highlight-box {
+            background: rgb(238, 238, 238);
+            border: 1px solid rgb(204, 204, 204);
+            padding: 10px 20px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .highlight-box span {
+            font-family: "Comic Sans MS", cursive;
+        }
+
+        .cta {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .cta a {
+            text-decoration: none;
+            color: #1e90ff;
+            font-size: 1.2em;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <!-- Notification container -->
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop>
+        <source src="media/background.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Notification -->
     <div id="notification">
         <span>No update found</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <img src="https://i.imgur.com/yH38QCS.png" alt="Icon 1" style="width: 200px; height: 215px;">
+        <img src="https://i.imgur.com/kyIQDEl.png" alt="Main Logo" style="width: 500px; height: 368px;">
+        <img src="https://i.imgur.com/6egIHni.png" alt="Icon 2" style="width: 300px; height: 206px;">
+
+        <p>This is RBscripts.</p>
+
+        <div class="highlight-box">
+            <span>No key system, straight forward scripts.</span>
+        </div>
+
+        <p><samp>That's cool and all, but where do I get all these scripts?</samp></p>
+
+        <div class="cta">
+            <h2><a href="https://massivel0l.github.io/RBscripts/dwnload.html">Get Scripts</a></h2>
+        </div>
     </div>
 
     <script>
@@ -55,75 +141,19 @@
             // Update the notification text
             notificationText.textContent = message;
 
-            // Reset styles for visibility
-            notification.style.top = '-60px'; // Reset starting position
-            notification.style.opacity = '1'; // Ensure it's visible
+            // Show and animate the notification
+            notification.style.top = '20px';
+            notification.style.opacity = '1';
 
-            // Slide down the notification
+            // Hide the notification after 3 seconds
             setTimeout(() => {
-                notification.style.top = '20px'; // Slide to visible position
-            }, 10);
-
-            // Wait for 3 seconds before hiding
-            setTimeout(() => {
-                // Slide up and fade out
                 notification.style.top = '-60px';
                 notification.style.opacity = '0';
             }, 3000);
         }
 
-        // Call the notification with a message
-        showNotification("Welcome to RBScripts!");
+        // Show initial notification
+        showNotification("Welcome to RBscripts!");
     </script>
-</body>
-</html>
-<html>
-<head>
-	<title></title>
-</head>
-<body>
-<link rel="stylesheet" href="style.css">
-	 #background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Ensures the video fills the entire area */
-            filter: blur(15px); /* Adjust the blur level here */
-            z-index: -1; /* Places the video behind other content */
-        }
-
-        /* Content overlay styling */
-        .content {
-            position: relative;
-            z-index: 1;
-            color: white;
-            text-align: center;
-            font-family: Arial, sans-serif;
-            font-size: 2em;
-            line-height: 1.5;
-            margin: 0;
-        }
-    </style>
-</head>
-<body>
-    <!-- Video element -->
-    <video id="background-video" autoplay muted loop>
-        <source src="media/background.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-
-<p><img alt="" src="https://i.imgur.com/yH38QCS.png" style="width: 200px; height: 215px;" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img alt="guess what? rbscripts" src="https://i.imgur.com/kyIQDEl.png" style="width: 500px; height: 368px;" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img alt="" src="https://i.imgur.com/6egIHni.png" style="width: 300px; height: 206px;" /></p>
-
-<p style="text-align: center;"><span style="font-family:arial,helvetica,sans-serif;">This is RBscripts.</span></p>
-
-<p style="text-align: center;">&nbsp;</p>
-
-<div style="background: rgb(238, 238, 238); border: 1px solid rgb(204, 204, 204); padding: 5px 10px; text-align: center;"><big><span style="font-family:arial,helvetica,sans-serif;"><span style="font-family:comic sans ms,cursive;">No key system, straight forward scripts.</span></span></big></div>
-
-<p style="text-align: center;"><samp><span style="font-family:lucida sans unicode,lucida grande,sans-serif;">Thats cool and all, but where do i get all these scripts?</span></samp></p>
-
-<h2 style="text-align: center;"><a href="https://massivel0l.github.io/RBscripts/dwnload.html"><span style="font-family:arial,helvetica,sans-serif;">Get Scripts</span></a></h2>
 </body>
 </html>
