@@ -3,6 +3,33 @@
 	<title>get scripts</title>
 </head>
 <body>
+	
+    <!-- Audio tag to handle playback -->
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <script>
+        // List of audio files to play
+        const audioFiles = ['media/sound.ogg', 'media/enter.mp3'];
+        let currentAudioIndex = 0;
+
+        // Get the audio player element
+        const audioPlayer = document.getElementById('audioPlayer');
+
+        // Function to play the next audio file
+        function playNextAudio() {
+            if (currentAudioIndex < audioFiles.length) {
+                audioPlayer.src = audioFiles[currentAudioIndex];
+                audioPlayer.play();
+                currentAudioIndex++;
+            }
+        }
+
+        // Add event listener to play the next audio when one ends
+        audioPlayer.addEventListener('ended', playNextAudio);
+
+        // Start playing the first audio
+        playNextAudio();
+    </script>
 <link rel="stylesheet" href="style.css">
 <audio autoplay>
 	<source src="/media/sound.ogg" type="audio/ogg">
