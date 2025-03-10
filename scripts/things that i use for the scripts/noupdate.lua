@@ -68,4 +68,4 @@ local function showNotification(message)
 end
 
 --// Call the Notification
-showNotification("No update found")
+showNotification("Synapse Y")
